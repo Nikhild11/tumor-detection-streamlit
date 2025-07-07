@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Tumor Detection & Segmentation</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    /* Spinner overlay */
+    #spinner-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(255,255,255,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      visibility: hidden; /* hidden by default */
+    }
+    .spinner {
+      border: 8px solid #f3f3f3;
+      border-top: 8px solid #0057e7;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    /* Container styling (you can move this into style.css if you like) */
+    body {
+      font-family: Arial, sans-serif;
+      padding: 30px;
+      background-color: #f7f7f7;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 10px;
+    }
+    .message {
+      margin: 15px 0;
+      font-size: 18px;
+      color: #333;
+    }
+    .images img {
+      max-width: 100%;
+      margin: 10px 0;
+      border: 2px solid #ccc;
+    }
+    .upload-form {
+      margin: 20px 0;
+    }
+    input[type="file"] {
+      margin: 10px 0;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #0057e7;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0041b3;
+    }
+  </style>
+</head>
+<body>
+  <!-- Spinner Overlay -->
+  <div id="spinner-overlay">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Main Container -->
+  <div class="container">
+    <h1>Tumor Detection System</h1>
+
+    {% if message %}
+      <div class="message">{{ message }}</div>
+    {% endif %}
+
+    <!-- Upload Form -->
+    <form id="upload-form" class="upload-form" method="post" enctype="multipart/form-data">
+      <input type="file" name="file" accept=".jpg, .jpeg, .png" required><br>
+      <button type="submit">Upload and Detect</button>
+    </form>
+
+    <!-- Results Section -->
+    <div id="results" class="images" {% if not detection_url and not segmentation_urls %}style="display:none"{% endif %}>
+        {% if detection_url %}
+        <img
+          src="{{ url_for('static', filename=detection_url) }}"
+          alt="Detected"
+        >
+      {% endif %}
+      
+
+      {% if segmentation_urls %}
+        <h3>Segmented Image(s):</h3>
+        {% for url in segmentation_urls %}
+          <img src="{{ url_for('static', filename=url) }}" alt="Segmentation">
+        {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- JavaScript to control spinner and results display -->
+  <script>
+    const form = document.getElementById('upload-form');
+    const spinner = document.getElementById('spinner-overlay');
+    const results = document.getElementById('results');
+
+    form.addEventListener('submit', () => {
+      spinner.style.visibility = 'visible';
+      form.style.display = 'none';
+      results.style.display = 'none';
+    });
+
+    window.addEventListener('load', () => {
+      spinner.style.visibility = 'hidden';
+      {% if detection_url or segmentation_urls %}
+        results.style.display = 'block';
+      {% endif %}
+    });
+  </script>
+</body>
+</html>
